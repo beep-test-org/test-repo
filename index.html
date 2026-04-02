@@ -22,39 +22,37 @@
 <p>Completed: <strong id="count"></strong></p>
 
 <script>
-  // BUG 1: todos is never initialized as an array properly in one flow
-  var todos;
+  // Initialize todos as an empty array
+  var todos = [];
 
   function addTodo() {
-    var text = document.getElementById('input').value;
-
-    // BUG 2: no empty check — pushes empty string, then .trim() called on undefined below
+    var text = document.getElementById('input').value.trim();
+    if (text === '') return;  // Prevent adding empty todos
     todos.push({ text: text, done: false });
-
     renderTodos();
     document.getElementById('input').value = '';
   }
 
   function deleteTodo(index) {
-    // BUG 3: splice on undefined when todos wasn't initialized
-    todos.splice(index, 1);
-    renderTodos();
+    if (index >= 0 && index < todos.length) {
+      todos.splice(index, 1);
+      renderTodos();
+    }
   }
 
   function toggleTodo(index) {
-    // BUG 4: todos[index] can be undefined if index is out of bounds
-    todos[index].done = !todos[index].done;
-    renderTodos();
+    if (index >= 0 && index < todos.length) {
+      todos[index].done = !todos[index].done;
+      renderTodos();
+    }
   }
 
   function renderTodos() {
     var list = document.getElementById('list');
     list.innerHTML = '';
-
+    
     for (var i = 0; i < todos.length; i++) {
       var todo = todos[i];
-
-      // BUG 5: todo.text.trim() throws if text is undefined
       var label = todo.text.trim();
 
       var li = document.createElement('li');
@@ -65,17 +63,13 @@
       list.appendChild(li);
     }
 
-    // BUG 6: updateCount() called but defined below with a typo in one path
     updateCount();
   }
 
   function updateCount() {
     var completed = todos.filter(function(t) {
-      // BUG 7: t is undefined when todos has a corrupt entry
       return t.done === true;
     });
-
-    // BUG 8: .length on null if completed is somehow null (defensive bug)
     document.getElementById('count').innerText = completed.length + ' / ' + todos.length;
   }
 </script>
